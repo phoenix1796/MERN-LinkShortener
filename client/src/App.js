@@ -7,12 +7,13 @@ class App extends Component {
   constructor() {
     super();
     this.state = {
-      Links: [{ longUri: '' }],
+      Host: 'http://localhost:8080',
+      Links: [{ longUri: '', shortUri: '' }],
     };
   }
   handleAddLink = () => {
     this.setState({
-      Links: this.state.Links.concat([{ longUri: '' }]),
+      Links: this.state.Links.concat([{ longUri: '', shortUri: '' }]),
     });
   };
   handleLongUriChange = idx => evt => {
@@ -33,14 +34,20 @@ class App extends Component {
   handleSubmit = evt => {
     evt.preventDefault();
     const { Links } = this.state;
-    axios
-      .post('http://localhost:8080/', {
-        data: {
-          longUri: Links.map(Link => Link.longUri),
-        },
-      })
+    axios(this.state.Host, {
+      method: 'POST',
+      mode: 'cors',
+      data: {
+        longUri: Links.map(Link => Link.longUri),
+      },
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Content-Type': 'application/json',
+      },
+    })
+      .then(res => res.data)
       .then(data => {
-        console.dir(data);
+        this.setState({ Host: data.Host, Links: data.Links });
       });
   };
 
@@ -49,7 +56,10 @@ class App extends Component {
       <div className="App">
         <header className="App-header">
           <img src={logo} className="App-logo" alt="logo" />
-          <h1 className="App-title">Welcome to React</h1>
+          <h1 className="App-title">Welcome to the MERN Link Shortener</h1>
+          <h4>
+            Current API is: <i>{this.state.Host}</i>
+          </h4>
         </header>
         <form onSubmit={this.handleSubmit}>
           <h4>Links</h4>
@@ -69,6 +79,12 @@ class App extends Component {
               >
                 -
               </button>
+
+              {Link.shortUri !== '' && (
+                <a target="_blank" href={`${this.state.Host}${Link.shortUri}`}>
+                  {`${this.state.Host}${Link.shortUri}`}
+                </a>
+              )}
             </div>
           ))}
           <button type="button" onClick={this.handleAddLink} className="small">
