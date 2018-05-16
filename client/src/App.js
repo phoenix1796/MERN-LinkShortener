@@ -33,7 +33,15 @@ class App extends Component {
   handleSubmit = evt => {
     evt.preventDefault();
     const { Links } = this.state;
-    console.dir(Links);
+    axios
+      .post('http://localhost:8080/', {
+        data: {
+          longUri: Links.map(Link => Link.longUri),
+        },
+      })
+      .then(data => {
+        console.dir(data);
+      });
   };
 
   render() {
